@@ -78,61 +78,61 @@ Page({
 
   recommand: function() {
     // tmp user vector
-    var uservector = {
-      a0: 2 * Math.random() - 1,
-      a1: 2 * Math.random() - 1,
-      a2: 2 * Math.random() - 1,
-      a3: 2 * Math.random() - 1,
-      a4: 2 * Math.random() - 1
-    }
+    // var uservector = {
+    //   a0: 2 * Math.random() - 1,
+    //   a1: 2 * Math.random() - 1,
+    //   a2: 2 * Math.random() - 1,
+    //   a3: 2 * Math.random() - 1,
+    //   a4: 2 * Math.random() - 1
+    // }
+    var pages = getCurrentPages(), p = pages[pages.length - 1]
     service.GetPatientById(function (res) {
-      console.log(uservector)
-    }, wx.getStorageSync('userId'))
-
-    return
-
-    service.GetClassById(function(res) {
-      //console.log(res)
-      var pages = getCurrentPages(), p = pages[pages.length - 1]
-      var doclist = res.data.doclist, curr_max = -Infinity, recommId
-      //console.log(curr_max)
-      for (let doc of doclist) {
-        let queues = doc.queue, flag = true
-        for (let q of queues) {
-          if (q.date == util.formatDate(p.data.regdate.date) && q.ampm == p.data.regdate.ampm) {
-            flag = false
-            if (q.status == 1) break
-            else {
-              let score = InnerProduct(uservector, doc.vectorize)
-              if (score > curr_max) {
-                curr_max = score
-                recommId = doc.id
+      //console.log(uservector)
+      var uservector = res.data.vectorize
+      //console.log(uservector)
+      service.GetClassById(function (res) {
+        //console.log(res)
+        var pages = getCurrentPages(), p = pages[pages.length - 1]
+        var doclist = res.data.doclist, curr_max = -Infinity, recommId
+        //console.log(curr_max)
+        for (let doc of doclist) {
+          let queues = doc.queue, flag = true
+          for (let q of queues) {
+            if (q.date == util.formatDate(p.data.regdate.date) && q.ampm == p.data.regdate.ampm) {
+              flag = false
+              if (q.status == 1) break
+              else {
+                let score = InnerProduct(uservector, doc.vectorize)
+                if (score > curr_max) {
+                  curr_max = score
+                  recommId = doc.id
+                }
               }
             }
           }
-        }
-        if (flag) {
-          //no queue yet
-          let score = InnerProduct(uservector, doc.vectorize)
-          if (score > curr_max) {
-            curr_max = score
-            recommId = doc.id
+          if (flag) {
+            //no queue yet
+            let score = InnerProduct(uservector, doc.vectorize)
+            if (score > curr_max) {
+              curr_max = score
+              recommId = doc.id
+            }
           }
         }
-      }
-      
-      if (curr_max > -Infinity) {
-        wx.redirectTo({
-          url: '/pages/reg/regtodoc?id=' + recommId + '&time=' + p.data.Time + '&classid=' + p.data.ClassId,
-        })
-      } else {
-        wx.showToast({
-          title: '暂无可用推荐',
-          duration: 2000,
-          icon: 'none'
-        })
-      }
-    }, this.data.ClassId)
+
+        if (curr_max > -Infinity) {
+          wx.redirectTo({
+            url: '/pages/reg/regtodoc?id=' + recommId + '&time=' + p.data.Time + '&classid=' + p.data.ClassId,
+          })
+        } else {
+          wx.showToast({
+            title: '暂无可用推荐',
+            duration: 2000,
+            icon: 'none'
+          })
+        }
+      }, p.data.ClassId)
+    }, wx.getStorageSync('userId'))    
   }
 })
 

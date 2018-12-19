@@ -106,7 +106,14 @@ const GetDocClassList = function(callBack) {
   var obj = {
     'url': baseUrl + 'Department/',
     'method': 'GET',
-    'callBack': callBack
+    'callBack': function(re) {
+      if (re.statusCode != 200) callBack(re)
+      else {
+        callBack({'statusCode': 200,
+          'data': re.data.Department
+        })
+      }
+    }
   }
   restfulService(obj)
 }
@@ -181,8 +188,7 @@ const AddReg = function (callBack, docid, classid, date, ampm, patientid) {
         passing_obj.callBack(re) //create reg failed, back to caller
         return
       }
-      //console.log('creating reg done')
-      console.log(re.data)
+      console.log('creating reg done')
       passing_obj['reg'] = re.data //hold reg obj for later use
       //find patient, associate reg with it 
       var obj = {
@@ -233,14 +239,15 @@ const AddReg = function (callBack, docid, classid, date, ampm, patientid) {
                       itm.reg.push({
                         'id': passing_obj.reg.id
                       })
-                      if (itm.reg.length >= 10) {
-                        itm.reg.status = 1
+                      //console.log(itm)
+                      if (itm.reg.length >= 3) {
+                        itm.status = 1
                       }
                       //update doc's queue
                       var obj = {
-                        'url': baseUrl + 'Doctor2/' + passing_obj.reg.regtodoc,
+                        'url': baseUrl + 'Queue2/' + itm.id,
                         'method': 'PUT',
-                        'data': re.data,
+                        'data': itm,
                         'callBack': function(re, passing_obj) {
                           if (re.statusCode != 200) {
                             passing_obj.callBack(re)
@@ -414,6 +421,8 @@ function restfulService (req_obj, passing_obj) {
     method: req_obj.method,
     data: JSON.stringify(req_obj.data),
     complete(re) {
+      //console.log(req_obj)
+      //console.log(re)
       req_obj.callBack(re, passing_obj)
     }
   })
@@ -426,6 +435,7 @@ module.exports = {
   SrchUser,
   AuthUser,
   GetDocClassList,
+  GetClassById,
   //GetDocListByClassId,
   GetPatientById,
   GetDocById,
@@ -434,156 +444,4 @@ module.exports = {
   AddReg, 
   //EmptyResourceByName,
   PayReg
-}
-
-function AddRegStatic(callBack, docid, date, ampm, patientid) {
-  callBack({
-    statusCode: 200,
-    data: {
-      id: 3928940,
-      ispaid: 0,
-      date: '2018/12/07',
-      price: '8.7',
-      ampm: 1,
-      regtoclass: {
-        id: 394837,
-        name: '门诊内科'
-      },
-      regtodoc: {
-        id: 475943,
-        name: '董明珠'
-      }
-    }
-  })
-}
-
-function PayRegStatic(callBack, id) {
-  callBack({
-    statusCode: 200,
-    data: {}
-  })
-}
-
-function GetDocByIdStatic(callBack, id) {
-  callBack({
-    statusCode: 200,
-    data: {
-      id: 22452525,
-      name: '董明珠',
-      type: 'Doctor',
-      profession: '董明珠，出生于江苏南京，企业家，先后毕业于安徽芜湖职业技术学院、中南财经政法大学EMBA2008级、中国社会科学院经济学系研究生班、中欧国际工商学院EMBA',
-      queue: [
-        {
-          id: 1111,
-          date: '2018/12/07',
-          ampm: 0,
-          status: 1
-        },
-        {
-          id: 1112,
-          date: '2018/12/07',
-          ampm: 1,
-          status: 0
-        }
-      ]
-    }
-  })
-}
-
-function GetDocClassListStatic(callBack) {
-  callBack({
-    data: {
-      Docclass:
-        [
-          {
-            id: 102938471,
-            name: '门诊内科',
-            desc: '',
-            classtype: 1,
-            doclist: [
-              {
-                id: 22452525,
-                name: '董明珠'
-              },
-              {
-                id: 39393939,
-                name: '罗永浩'
-              }
-            ]
-          },
-          {
-            id: 393828212,
-            name: '门诊外科',
-            desc: '',
-            classtype: 1,
-            doclist: [
-              {
-                id: 29384934,
-                name: '雷军'
-              },
-              {
-                id: 39482939,
-                name: '马云'
-              }
-            ]
-          }
-        ]
-    }
-  })
-}
-
-function GetDocListByClassIdStatic(callBack, classId) {
-  callBack({
-    statusCode: 200,
-    data: [
-      {
-        name: '马云',
-        age: 8,
-        id: 3938473,
-        vectorize: {
-          a0: 2 * Math.random() - 1,
-          a1: 2 * Math.random() - 1,
-          a2: 2 * Math.random() - 1,
-          a3: 2 * Math.random() - 1,
-          a4: 2 * Math.random() - 1
-        },
-        queue: [
-          {
-            date: '2018/12/10',
-            ampm: 0,
-            status: 0
-          },
-          {
-            date: '2018/12/09',
-            ampm: 1,
-            status: 1 //full
-          }
-        ]
-      },
-      {
-        name: '雷军',
-        age: 8,
-        id: 2938374,
-        vectorize: {
-          a0: 2 * Math.random() - 1,
-          a1: 2 * Math.random() - 1,
-          a2: 2 * Math.random() - 1,
-          a3: 2 * Math.random() - 1,
-          a4: 2 * Math.random() - 1
-        },
-        queue: [
-          {
-            date: '2018/12/10',
-            ampm: 0,
-            status: 0
-          },
-          {
-            date: '2018/12/09',
-            ampm: 1,
-            status: 0 //full
-          }
-        ]
-      }
-    ]
-  })
 }

@@ -42,10 +42,17 @@ Page({
   onLoad: function(){  
     service.GetDocClassList(function(res){
       //console.log(res)
-      var pages = getCurrentPages()
-      var p = pages[pages.length-1]
+      if (res.statusCode != 200) {
+        wx.showToast({
+          title: '网路错误',
+          icon: 'none',
+          duration: 2000
+        })
+        return
+      }
+      var pages = getCurrentPages(), p = pages[pages.length-1]
       
-      var list = res.data.Doctclass
+      var list = res.data
       for (let item of list) {
         item['open'] = false
         //item['pages'] = []
