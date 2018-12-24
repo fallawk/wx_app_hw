@@ -1,6 +1,7 @@
 // pages/reg/regtodoc.js
 const service = require('../../utils/services.js')
 const util = require('../../utils/util.js')
+const recommsys = require('../../utils/recomalgs.js')
 
 Page({
 
@@ -25,6 +26,7 @@ Page({
       ClassId: options.classid,
       Time: options.time
     })
+
     service.GetDocById(function(res){
       if (res.statusCode != 200) return
       var pages = getCurrentPages()
@@ -73,7 +75,7 @@ Page({
     //console.log(e)
     var patientid = wx.getStorageSync('userId')
     service.AddReg(AddRegCallBack, this.data.DocId, this.data.ClassId, util.formatDate(this.data.regdate.date), this.data.regdate.ampm, patientid)
-
+    recommsys.updateWeights(wx.getStorageSync('userId'), this.data.ClassId)
   },
 
   recommand: function() {
@@ -155,3 +157,4 @@ function AddRegCallBack(res) {
     })
   }
 }
+

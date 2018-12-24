@@ -386,32 +386,31 @@ const GetPatientById = function(callBack, id) {
   restfulService(obj)
 }
 
-const EmptyResourceByName = function(callBack, resourceName) {
-  //empy a particular resouce, make sure dependancies have been removed properly
-  //fetch all data objs
+const UpdateWeights = function(type, id, vecobj) {
+  //type 0 doc, 1 pat
+  var url = baseUrl + (type == 0 ? 'doctor2/' : 'patient2/')
   var obj = {
-    'url': baseUrl + resourceName,
+    'url': url + id,
     'method': 'GET',
     'data': {},
-    'callBack' : function(res, passing_obj) {
-      if (res.statusCode != 200) {
-        callBack(res)
-        return
-      }
-      for (let itm of res.data[passing_obj.name]) {
-        var obj = {
-          'url': baseUrl + passing_obj.name + '/' + itm.id,
-          'method': 'GET',
-          'data': {},
-          'callBack': function(re) {
-            console.log(re)
+    'callBack': function(re) {
+      if (re.statusCode != 200) return
+      var obj = {
+        'url': baseUrl + 'Vectorization/' + re.data.vectorize.id,
+        'method': 'PUT',
+        'data': vecobj,
+        'callBack': function(res) {
+          if (res.statusCode == 200) {
+            console.log('update complete')
+          } else {
+            console.log('update failed')
           }
         }
-        restfulService(obj)
       }
+      restfulService(obj)
     }
   }
-  restfulService(obj, {'callBack': callBack, 'name': resourceName})
+  restfulService(obj)
 }
 
 function restfulService (req_obj, passing_obj) {
@@ -442,6 +441,7 @@ module.exports = {
   GetClassById,
   GetRegById,
   AddReg, 
+  UpdateWeights,
   //EmptyResourceByName,
   PayReg
 }
